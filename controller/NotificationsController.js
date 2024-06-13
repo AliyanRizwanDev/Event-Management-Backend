@@ -1,9 +1,8 @@
 import Notification from "../models/NotificationsModel.js";
-import User from "../models/UserModel.js"; 
+import User from "../models/UserModel.js";
 import nodemailer from "nodemailer";
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config();
-
 
 const transporter = nodemailer.createTransport({
   host: "live.smtp.mailtrap.io",
@@ -16,7 +15,7 @@ const transporter = nodemailer.createTransport({
 
 const sendEmail = (to, subject, text) => {
   const mailOptions = {
-    from: 'info@demomailtrap.com',
+    from: "info@demomailtrap.com",
     to: to,
     subject: subject,
     text: text,
@@ -30,7 +29,6 @@ const sendEmail = (to, subject, text) => {
   });
 };
 
-
 export const getAllNotifications = async (req, res) => {
   try {
     const notifications = await Notification.find();
@@ -40,15 +38,12 @@ export const getAllNotifications = async (req, res) => {
   }
 };
 
-
 export const createNotification = async (req, res) => {
   try {
     const newNotification = await Notification.create(req.body);
 
-    
     const attendees = await User.find({ role: "attendee" });
 
-    
     attendees.forEach((attendee) => {
       sendEmail(attendee.email, "New Notification", req.body.message);
     });
@@ -58,7 +53,6 @@ export const createNotification = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
 
 export const getNotificationById = async (req, res) => {
   try {
@@ -72,13 +66,15 @@ export const getNotificationById = async (req, res) => {
   }
 };
 
-
 export const deleteNotification = async (req, res) => {
   try {
     const notification = await Notification.findByIdAndDelete(req.params.id);
 
-    
-    sendEmail(notification.email, "Notification Canceled", "Your notification has been canceled.");
+    sendEmail(
+      notification.email,
+      "Notification Canceled",
+      "Your notification has been canceled."
+    );
 
     res.status(200).json({ message: "Notification canceled successfully" });
   } catch (error) {

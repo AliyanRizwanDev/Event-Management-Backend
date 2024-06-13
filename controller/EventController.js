@@ -3,22 +3,9 @@ import User from "../models/UserModel.js";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import cron from "node-cron";
-import multer from "multer";
-import path from "path";
+import uploadImage  from "../middleware/upload.js";
+
 dotenv.config();
-
-// const storage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     cb(null, "../Public/images");
-//   },
-//   filename: (req, file, cb) => {
-//     cb(null, file.originalname);
-//   },
-// });
-
-// export const upload = multer({
-//   storage: storage,
-// });
 
 const transporter = nodemailer.createTransport({
   host: "live.smtp.mailtrap.io",
@@ -49,33 +36,38 @@ export const createEvent = async (req, res) => {
   try {
     const { title, description, date, time, venue, ticketTypes, discountCodes, organizer } = req.body;
 
-    // Create new event
+    
+    let parsedTicketTypes;
+    let parsedDiscountCodes;
+    try {
+      parsedTicketTypes = typeof ticketTypes === 'string' ? JSON.parse(ticketTypes) : ticketTypes;
+      parsedDiscountCodes = typeof discountCodes === 'string' ? JSON.parse(discountCodes) : discountCodes;
+    } catch (error) {
+      return res.status(400).json({ message: "Invalid format for ticketTypes or discountCodes", error });
+    }
+    console.log("File:",req.file);
+
+    
     const event = new Event({
       title,
       description,
       date,
       time,
       venue,
-      ticketTypes,
-      discountCodes,
+      ticketTypes: parsedTicketTypes,
+      discountCodes: parsedDiscountCodes,
       organizer,
+      image: req.file ? req.file.filename : null 
     });
 
     await event.save();
 
-    // Send email notification
-    const organizerEmail = "organizer@example.com"; // Replace with actual organizer email
-    const subject = `New Event Created: ${title}`;
-    const message = `Your event "${title}" has been successfully created.`;
-
-    sendEmail(organizerEmail, subject, message);
 
     res.status(201).json({ message: "Event created successfully", event });
   } catch (error) {
     res.status(500).json({ message: "Error creating event", error });
   }
 };
-
 
 export const getAllEvents = async (req, res) => {
   try {

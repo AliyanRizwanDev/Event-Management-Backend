@@ -1,5 +1,4 @@
 import express from "express";
-import path from "path";
 import {
   createEvent,
   getAllEvents,
@@ -11,15 +10,11 @@ import {
   addDiscountCode,
   bookTicket,
 } from "../controller/EventController.js";
+import uploadImage from "../middleware/upload.js";
 
 const router = express.Router();
-// const imagesDirectory = new URL("../Public/images", import.meta.url).pathname;
 
-// router.use("/images", express.static(path.resolve(imagesDirectory)));
-
-// router.post("/", upload.single("image"), createEvent);
-
-router.post("/", createEvent);
+router.post("/", uploadImage.single("image"), createEvent);
 router.get("/", getAllEvents);
 router.get("/:id", getEventById);
 router.put("/:id", updateEvent);
