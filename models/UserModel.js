@@ -24,7 +24,7 @@ UserSchema.statics.signup = async function (
   if (!validator.isEmail(email)) {
     throw new Error("Please enter a valid email address");
   }
-  if (!validator.isStrongPassword(password)) {
+  if (password.length < 6) {
     throw new Error("Please enter a strong password");
   }
   if (role != "attendee" && role != "organizer" && role != "admin") {

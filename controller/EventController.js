@@ -8,8 +8,8 @@ import uploadImage  from "../middleware/upload.js";
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
-  host: "live.smtp.mailtrap.io",
-  port: 587,
+  host: process.env.MAILTRAP_HOST,
+  port: process.env.MAILTRAP_HOST_PORT,
   auth: {
     user: process.env.MAILTRAP_USER,
     pass: process.env.MAILTRAP_PASS,
@@ -18,7 +18,7 @@ const transporter = nodemailer.createTransport({
 
 const sendEmail = (to, subject, text) => {
   const mailOptions = {
-    from: "info@demomailtrap.com",
+    from: process.env.MAILTRAP_HOST_SENDER,
     to: to,
     subject: subject,
     text: text,
@@ -92,26 +92,49 @@ export const getEventById = async (req, res) => {
 
 export const updateEvent = async (req, res) => {
   try {
-    const updatedEvent = await Event.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
-    if (!updatedEvent) {
-      return res.status(404).json({ message: "Event not found" });
-    }
+      const { title, description, date, time, venue, ticketTypes, discountCodes, organizer } = req.body;
+      
+      let parsedTicketTypes;
+      let parsedDiscountCodes;
+      try {
+          parsedTicketTypes = typeof ticketTypes === 'string' ? JSON.parse(ticketTypes) : ticketTypes;
+          parsedDiscountCodes = typeof discountCodes === 'string' ? JSON.parse(discountCodes) : discountCodes;
+      } catch (error) {
+          return res.status(400).json({ message: "Invalid format for ticketTypes or discountCodes", error });
+      }
 
-    sendEmail(
-      updatedEvent.organizer.email,
-      "Event Updated",
-      `Your event ${updatedEvent.title} has been updated successfully.`
-    );
+      const event = await Event.findById(req.params.id);
+      if (!event) {
+          return res.status(404).json({ message: "Event not found" });
+      }
 
-    res.status(200).json(updatedEvent);
+      event.title = title;
+      event.description = description;
+      event.date = date;
+      event.time = time;
+      event.venue = venue;
+      event.ticketTypes = parsedTicketTypes;
+      event.discountCodes = parsedDiscountCodes;
+      event.organizer = organizer;
+
+      if (req.file) {
+          event.image = req.file.filename;
+      }
+
+      await event.save();
+
+      sendEmail(
+          event.organizer.email,
+          "Event Updated",
+          `Your event ${event.title} has been updated successfully.`
+      );
+
+      res.status(200).json(event);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+      res.status(500).json({ message: error.message });
   }
 };
+
 
 export const deleteEvent = async (req, res) => {
   try {

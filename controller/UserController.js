@@ -6,13 +6,12 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const createToken = (_id) => {
-  return jwt.sign({ _id }, process.env.SECRET, { expiresIn: "3d" });
+  return jwt.sign({ _id }, process.env.SECRET, { expiresIn: "10d" });
 };
 
-// Configure nodemailer
 const transporter = nodemailer.createTransport({
-  host: "live.smtp.mailtrap.io",
-  port: 587,
+  host: process.env.MAILTRAP_HOST,
+  port: process.env.MAILTRAP_HOST_PORT,
   auth: {
     user: process.env.MAILTRAP_USER,
     pass: process.env.MAILTRAP_PASS,
@@ -21,7 +20,7 @@ const transporter = nodemailer.createTransport({
 
 const sendEmail = (to, subject, text) => {
   const mailOptions = {
-    from: 'info@demomailtrap.com',
+    from: process.env.MAILTRAP_HOST_SENDER,
     to: to,
     subject: subject,
     text: text,
@@ -52,7 +51,6 @@ export const signup = async (req, res) => {
       token,
     };
 
-    // Send signup email
     sendEmail(email, "Welcome to Event Management", `Hi ${firstName}, welcome to our platform!`);
 
     res.status(201).json({ message: "User created successfully", user: userData });
@@ -78,7 +76,6 @@ export const login = async (req, res) => {
       token,
     };
 
-    // Send login notification email
     sendEmail(email, "Login Notification", `Hi ${user.firstName}, you have successfully logged in!`);
 
     res.status(201).json({ message: "User logged in successfully", user: userData });
@@ -113,7 +110,6 @@ export const profileEdit = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Send profile update notification email
     sendEmail(email, "Profile Updated", `Hi ${firstName}, your profile has been updated successfully!`);
 
     res.status(200).json({ message: "User profile updated successfully", updatedProfile });
@@ -130,7 +126,6 @@ export const profileDelete = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Send profile deletion notification email
     sendEmail(userProfile.email, "Profile Deleted", `Hi ${userProfile.firstName}, your profile has been deleted.`);
 
     res.status(200).json({ message: "User profile deleted", userProfile });
@@ -158,7 +153,6 @@ export const updatePassword = async (req, res) => {
     user.password = hashedPassword;
     await user.save();
 
-    // Send password update notification email
     sendEmail(user.email, "Password Updated", `Hi ${user.firstName}, your password has been updated successfully!`);
 
     res.status(200).json({ message: "Password updated successfully" });

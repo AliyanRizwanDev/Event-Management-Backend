@@ -17,7 +17,7 @@ const router = express.Router();
 router.post("/", uploadImage.single("image"), createEvent);
 router.get("/", getAllEvents);
 router.get("/:id", getEventById);
-router.put("/:id", updateEvent);
+router.put("/:id", uploadImage.single("image"), updateEvent);
 router.delete("/:id", deleteEvent);
 router.post("/:id/attend", markEventAsAttended);
 router.post("/:id/feedback", addFeedback);

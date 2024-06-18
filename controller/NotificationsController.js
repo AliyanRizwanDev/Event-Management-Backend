@@ -5,8 +5,8 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
-  host: "live.smtp.mailtrap.io",
-  port: 587,
+  host: process.env.MAILTRAP_HOST,
+  port: process.env.MAILTRAP_HOST_PORT,
   auth: {
     user: process.env.MAILTRAP_USER,
     pass: process.env.MAILTRAP_PASS,
@@ -15,12 +15,11 @@ const transporter = nodemailer.createTransport({
 
 const sendEmail = (to, subject, text) => {
   const mailOptions = {
-    from: "info@demomailtrap.com",
+    from: process.env.MAILTRAP_HOST_SENDER,
     to: to,
     subject: subject,
     text: text,
   };
-
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
       return console.log(error);
