@@ -1,14 +1,18 @@
 import mongoose from "mongoose";
 
 const FeedbackSchema = new mongoose.Schema({
-  attendee: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  attendee: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
   rating: { type: Number, min: 1, max: 5, required: true },
   comment: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
 });
 
 const DiscountCodeSchema = new mongoose.Schema({
-  code: { type: String, unique: true },
+  code: { type: String },
   discountPercentage: { type: Number, required: true, min: 0, max: 100 },
   expiryDate: { type: Date, required: true },
   createdAt: { type: Date, default: Date.now },
@@ -37,7 +41,7 @@ const EventSchema = new mongoose.Schema({
   feedback: [FeedbackSchema],
   discountCodes: [DiscountCodeSchema],
   createdAt: { type: Date, default: Date.now },
-  image: { type: String }
+  image: { type: String },
 });
 
 export default mongoose.model("Event", EventSchema);
